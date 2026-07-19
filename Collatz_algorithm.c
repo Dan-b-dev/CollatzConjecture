@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <stdint.h>
-#define DOMAIN_UPPER_BOUND 100000000 // upper bound of positive integer inputs into the function
+#define DOMAIN_UPPER_BOUND 100 // upper bound of positive integer inputs into the function
 
 typedef struct {
+    int number;
     int stopping_time;
     int64_t trajectory_max;
-} data;
+} data; 
+
+typedef enum {
+    sort_peak,
+    sort_stopping_time
+} sort_field;
 
 data collatz_data[DOMAIN_UPPER_BOUND];
 
@@ -31,6 +37,7 @@ void build_collatz_data (void) {
     int64_t trajectory_max;
     for (int64_t i = 1; i <= DOMAIN_UPPER_BOUND; i++) {
         collatz(i, &stopping_time, &trajectory_max);
+        collatz_data[i].number = i;
         collatz_data[i].trajectory_max = trajectory_max;
         collatz_data[i].stopping_time = stopping_time;
     }
@@ -58,6 +65,34 @@ void find_largest_stopping_time(int64_t *stopping_time_index, int *stopping_time
     }
 }
 
+void bubble_sort (data array[], int length, sort_field field) {
+    int i;
+    int n;
+    data *p = array;
+    if (field == sort_peak) {
+        for (n = 0; n < length; n++) {
+            for (i = 0; i < length - 1 - n; i++) {
+                if ((p + i + 1)->trajectory_max < (p + i)->trajectory_max) {
+                    data temp = *(p + i + 1); // swapping elements in the array through a local variable
+                    *(p + i + 1) = *(p + i);
+                    *(p + i) = temp; 
+                }
+            }   
+        }
+    }
+    else if (field == sort_stopping_time) {
+        for (n = 0; n < length; n++) {
+            for (i = 0; i < length - 1 - n; i++) {
+                if ((p + i + 1)->stopping_time < (p + i)->stopping_time) {
+                    data temp = *(p + i + 1); // swapping elements in the array through a local variable
+                    *(p + i + 1) = *(p + i);
+                    *(p + i) = temp; 
+                }
+            }   
+        }
+    }
+}
+
 int main(void) {
     int64_t largest_peak;
     int64_t largest_peak_number;
@@ -68,4 +103,8 @@ int main(void) {
     find_largest_stopping_time(&longest_stopping_time_number, &longest_stopping_time);
     printf("largest peak is %d, with a starting number of %d\n", largest_peak, largest_peak_number);
     printf("longest stopping time is %d, with a starting number of %d\n", longest_stopping_time, longest_stopping_time_number);
+    bubble_sort(collatz_data, DOMAIN_UPPER_BOUND, sort_stopping_time);
+    for (int i = 1; i < DOMAIN_UPPER_BOUND; i++) {
+        printf("%lld ", collatz_data[i].stopping_time);
+    }
 }
