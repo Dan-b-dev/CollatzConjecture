@@ -1,23 +1,20 @@
 #include <stdio.h>
 #include <stdint.h>
-#define DOMAIN_UPPER_BOUND 100 // upper bound of positive integer inputs into the function
+#include <time.h>
+#include <inttypes.h>
+#define DOMAIN_UPPER_BOUND 10000000 // upper bound of positive integer inputs into the function
 
 typedef struct {
-    int number;
-    int stopping_time;
-    int64_t trajectory_max;
-} data; 
+    uint64_t initial_value;
+    uint64_t stopping_time;
+    uint64_t peak;
+} CollatzData; 
 
-typedef enum {
-    sort_peak,
-    sort_stopping_time
-} sort_field;
+CollatzData collatz_data[DOMAIN_UPPER_BOUND];
 
-data collatz_data[DOMAIN_UPPER_BOUND];
-
-void collatz(int64_t n, int *stopping_time, int64_t *trajectory_max) {
+void compute_collatz(uint64_t n, uint64_t *stopping_time, uint64_t *peak) {
     *stopping_time = 0;
-    *trajectory_max = n;
+    *peak = n;
     while (n != 1) {
         if ( n % 2 == 1) {
             n = 3 * n + 1;
@@ -26,85 +23,49 @@ void collatz(int64_t n, int *stopping_time, int64_t *trajectory_max) {
             n /= 2;
         }
         (*stopping_time)++;
-        if (n > *trajectory_max) {
-            *trajectory_max = n;
+        if (n > *peak) {
+            *peak = n;
         }
     }
 }
 
 void build_collatz_data (void) {
-    int stopping_time;
-    int64_t trajectory_max;
-    for (int64_t i = 1; i <= DOMAIN_UPPER_BOUND; i++) {
-        collatz(i, &stopping_time, &trajectory_max);
-        collatz_data[i].number = i;
-        collatz_data[i].trajectory_max = trajectory_max;
+    uint64_t stopping_time;
+    uint64_t peak;
+    for (uint64_t i = 1; i <= DOMAIN_UPPER_BOUND; i++) {
+        compute_collatz(i, &stopping_time, &peak);
+        collatz_data[i].initial_value = i;
+        collatz_data[i].peak = peak;
         collatz_data[i].stopping_time = stopping_time;
     }
 }
 
-void find_largest_peak(int64_t *peak_index, int64_t *peak) {
-    *peak_index = 0;
-    *peak = collatz_data[0].trajectory_max;
-    for (int64_t i = 1; i <= DOMAIN_UPPER_BOUND; i++) {
-        if (collatz_data[i].trajectory_max > *peak) {
-            *peak = collatz_data[i].trajectory_max;
-            *peak_index = i;
+void find_peak_records () {
+    uint64_t current_record = 0;
+    for (uint64_t i = 1; i < DOMAIN_UPPER_BOUND; i++) {
+        if (collatz_data[i].peak > current_record ) {
+            current_record = collatz_data[i].peak; 
+            printf("index: %" PRIu64 " record: %" PRIu64 "\n", collatz_data[i].initial_value, current_record);
+          
         }
     }
 }
 
-void find_largest_stopping_time(int64_t *stopping_time_index, int *stopping_time) {
-    *stopping_time_index = 0;
-    *stopping_time = collatz_data[0].stopping_time;
-    for (int64_t i = 1; i <= DOMAIN_UPPER_BOUND; i++) {
-        if (collatz_data[i].stopping_time > *stopping_time) {
-            *stopping_time = collatz_data[i].stopping_time;
-            *stopping_time_index = i;
-        }
-    }
-}
-
-void bubble_sort (data array[], int length, sort_field field) {
-    int i;
-    int n;
-    data *p = array;
-    if (field == sort_peak) {
-        for (n = 0; n < length; n++) {
-            for (i = 0; i < length - 1 - n; i++) {
-                if ((p + i + 1)->trajectory_max < (p + i)->trajectory_max) {
-                    data temp = *(p + i + 1); // swapping elements in the array through a local variable
-                    *(p + i + 1) = *(p + i);
-                    *(p + i) = temp; 
-                }
-            }   
-        }
-    }
-    else if (field == sort_stopping_time) {
-        for (n = 0; n < length; n++) {
-            for (i = 0; i < length - 1 - n; i++) {
-                if ((p + i + 1)->stopping_time < (p + i)->stopping_time) {
-                    data temp = *(p + i + 1); // swapping elements in the array through a local variable
-                    *(p + i + 1) = *(p + i);
-                    *(p + i) = temp; 
-                }
-            }   
+void find_stopping_time_records () {
+    uint64_t current_record = 0;
+    for (uint64_t i = 1; i < DOMAIN_UPPER_BOUND; i++) {
+        if (collatz_data[i].stopping_time > current_record) {
+            current_record = collatz_data[i].stopping_time; 
+            printf("index: %" PRIu64 " record: %" PRIu64 "\n", collatz_data[i].initial_value, current_record);
         }
     }
 }
 
 int main(void) {
-    int64_t largest_peak;
-    int64_t largest_peak_number;
-    int longest_stopping_time;
-    int64_t longest_stopping_time_number;
+    clock_t start = clock();
     build_collatz_data();
-    find_largest_peak(&largest_peak_number, &largest_peak);
-    find_largest_stopping_time(&longest_stopping_time_number, &longest_stopping_time);
-    printf("largest peak is %d, with a starting number of %d\n", largest_peak, largest_peak_number);
-    printf("longest stopping time is %d, with a starting number of %d\n", longest_stopping_time, longest_stopping_time_number);
-    bubble_sort(collatz_data, DOMAIN_UPPER_BOUND, sort_stopping_time);
-    for (int i = 1; i < DOMAIN_UPPER_BOUND; i++) {
-        printf("%lld ", collatz_data[i].stopping_time);
-    }
+    find_peak_records();
+    clock_t end = clock();
+    double seconds = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("\nRuntime: %.6f seconds\n", seconds);
 }
