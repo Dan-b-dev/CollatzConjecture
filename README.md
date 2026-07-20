@@ -1,5 +1,5 @@
 ﻿# CollatzConjecture
 
-This program runs the Collatz sequence through a domain of positive integers and constructs arrays of data such as stopping times and maxima, before using sorting algorithms to sort the arrays
+This program runs the Collatz sequence through a domain of positive integers and constructs arrays of data containing total stopping times and maxima, while storing any records.
 
-The project aims to be an introduction to scientific computing, sorting algorithms and effective use of pointers
+The project aims to be a personal introduction to scientific computing.
