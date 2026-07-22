@@ -3,14 +3,21 @@
 #include <time.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#define DOMAIN_UPPER_BOUND 1000000000// upper bound of positive integer inputs into the function
-#define MAX_MEMO 1500
+#define DOMAIN_UPPER_BOUND 100000000// upper bound of positive integer inputs into the function
+#define MAX_MEMO 1000000
+
+typedef struct {
+    uint64_t stopping_time;
+    uint64_t peak;
+} memo_entry;
+
+
 
 bool overflow_detected (uint64_t peak) {
     return (peak > (UINT64_MAX - 1) / 3);
 }
 
-void compute_collatz(uint64_t n, uint64_t *peak, uint64_t *stopping_time, uint64_t *memo, uint64_t *trajectory) {
+void compute_collatz(uint64_t n, uint64_t *peak, uint64_t *stopping_time, memo_entry *memo, uint64_t *trajectory) {
     *peak = n;
     *stopping_time = 0;
     uint64_t length = 0;
@@ -36,11 +43,15 @@ void compute_collatz(uint64_t n, uint64_t *peak, uint64_t *stopping_time, uint64
             *peak = n;
         }
 
-
-        if (n < MAX_MEMO && memo[n] != 0) {
-            *stopping_time += memo[n] - 1;
+        if (n < MAX_MEMO && memo[n].stopping_time != 0) {
+            *stopping_time += memo[n].stopping_time - 1;
+             if (memo[n].peak > *peak) {
+                *peak = memo[n].peak;
+            }
             break;
         }
+
+       
     }
 
     if (length >= MAX_MEMO) {
@@ -50,7 +61,8 @@ void compute_collatz(uint64_t n, uint64_t *peak, uint64_t *stopping_time, uint64
 
     for (uint64_t i = 0; i < length; i++) {
         if (trajectory[i] < MAX_MEMO) {
-               memo[trajectory[i]] = *stopping_time - i + 1;
+               memo[trajectory[i]].stopping_time = *stopping_time - i + 1;
+               memo[trajectory[i]].peak = *peak;
         }
     } 
 }
@@ -71,21 +83,22 @@ void find_stopping_time (uint64_t initial_value, uint64_t *stopping_time, uint64
 }
 
 int main(void) {
+    memo_entry *memo = calloc(MAX_MEMO, sizeof(memo_entry));
     uint64_t current_record = 0;
     uint64_t peak;
     uint64_t stopping_time;
-    uint64_t *memo = calloc(MAX_MEMO, sizeof(uint64_t));
     uint64_t *trajectory = malloc(MAX_MEMO * sizeof(uint64_t));
-    memo[1] = 1;
+    memo[1].peak = 1;
+    memo[1].stopping_time = 1;
     clock_t start = clock();
 
     for (uint64_t initial_value = 1; initial_value <= DOMAIN_UPPER_BOUND; initial_value++) {
         compute_collatz(initial_value, &peak, &stopping_time, memo, trajectory);
-        find_stopping_time(initial_value, &stopping_time, &current_record);
+        find_peak(initial_value, &peak, &current_record);
     }
 
     free(memo);
-    
+
     clock_t end = clock();
     double seconds = (double)(end - start) / CLOCKS_PER_SEC;
     printf("\nRuntime: %.6f seconds\n", seconds);
