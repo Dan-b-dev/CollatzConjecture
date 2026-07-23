@@ -1,21 +1,4 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <time.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#define DOMAIN_UPPER_BOUND 1000000000// upper bound of positive integer inputs into the function
-#define MAX_MEMO 10000000
-
-typedef struct {
-    uint16_t stopping_time;
-    uint64_t peak;
-} memo_entry;
-
-
-
-bool overflow_detected (uint64_t peak) {
-    return (peak > (UINT64_MAX - 1) / 3);
-}
+#include "Collatz.h"
 
 void compute_collatz(uint64_t n, uint64_t *peak, uint16_t *stopping_time, memo_entry *memo, uint64_t *trajectory) {
     *peak = n;
@@ -37,6 +20,7 @@ void compute_collatz(uint64_t n, uint64_t *peak, uint16_t *stopping_time, memo_e
         else {
             n /= 2;
         }
+        
         (*stopping_time)++;
 
         if (n > *peak) {
@@ -50,19 +34,17 @@ void compute_collatz(uint64_t n, uint64_t *peak, uint16_t *stopping_time, memo_e
             }
             break;
         }
-
-       
     }
 
     if (length >= MAX_MEMO) {
-        fprintf(stderr, "Trajectory buffer overflow\n");
+        printf("Trajectory buffer overflow\n");
         exit(EXIT_FAILURE);
     }
 
     for (uint64_t i = 0; i < length; i++) {
         if (trajectory[i] < MAX_MEMO) {
-               memo[trajectory[i]].stopping_time = *stopping_time - i + 1;
-               memo[trajectory[i]].peak = *peak;
+            memo[trajectory[i]].stopping_time = *stopping_time - i + 1;
+            memo[trajectory[i]].peak = *peak;
         }
     } 
 }
@@ -77,30 +59,7 @@ void find_peak (uint64_t initial_value, uint64_t *peak, uint64_t *current_record
 void find_stopping_time (uint64_t initial_value, uint16_t *stopping_time, uint64_t *current_record) {;
     if (*stopping_time > *current_record ) {
         *current_record = *stopping_time; 
-        printf("index: %" PRIu64 " record: %" PRIu16 "\n", initial_value, *current_record);
+        printf("index: %" PRIu64 " record: %" PRIu64 "\n", initial_value, *current_record);
         
     }
 }
-
-int main(void) {
-    memo_entry *memo = calloc(MAX_MEMO, sizeof(memo_entry));
-    uint64_t current_record = 0;
-    uint64_t peak;
-    uint16_t stopping_time;
-    uint64_t *trajectory = malloc(MAX_MEMO * sizeof(uint64_t));
-    memo[1].peak = 1;
-    memo[1].stopping_time = 1;
-    clock_t start = clock();
-
-    for (uint64_t initial_value = 1; initial_value <= DOMAIN_UPPER_BOUND; initial_value++) {
-        compute_collatz(initial_value, &peak, &stopping_time, memo, trajectory);
-        find_stopping_time(initial_value, &stopping_time, &current_record);
-    }
-
-    free(memo);
-
-    clock_t end = clock();
-    double seconds = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("\nRuntime: %.6f seconds\n", seconds);
-}
-
