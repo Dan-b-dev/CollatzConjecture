@@ -1,4 +1,4 @@
-#include "Collatz.h"
+#include "collatz.h"
 
 int main(void) {
     memo_entry *memo = calloc(MAX_MEMO, sizeof(memo_entry));

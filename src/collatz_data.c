@@ -1,4 +1,9 @@
-#include "Collatz.h"
+#ifdef COLLATZ_H
+#error "COLLATZ_H already defined"
+#endif
+
+
+#include "collatz.h"
 
 void compute_collatz(uint64_t n, uint64_t *peak, uint16_t *stopping_time, memo_entry *memo, uint64_t *trajectory) {
     *peak = n;
