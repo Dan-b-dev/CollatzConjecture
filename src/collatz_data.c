@@ -1,8 +1,3 @@
-#ifdef COLLATZ_H
-#error "COLLATZ_H already defined"
-#endif
-
-
 #include "collatz.h"
 
 void compute_collatz(uint64_t n, uint64_t *peak, uint16_t *stopping_time, memo_entry *memo, uint64_t *trajectory) {
@@ -65,6 +60,5 @@ void find_stopping_time (uint64_t initial_value, uint16_t *stopping_time, uint64
     if (*stopping_time > *current_record ) {
         *current_record = *stopping_time; 
         printf("index: %" PRIu64 " record: %" PRIu64 "\n", initial_value, *current_record);
-        
     }
 }

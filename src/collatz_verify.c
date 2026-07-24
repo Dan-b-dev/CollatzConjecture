@@ -5,6 +5,7 @@ bool overflow_detected (uint64_t peak) {
 }
 
 void verify_collatz(uint64_t n){
+    uint64_t initial = n;
     while (n != 1) {
         if (overflow_detected(n)) {
             printf("overflow at %" PRIu64, n);
@@ -17,6 +18,10 @@ void verify_collatz(uint64_t n){
 
         else {
             n /= 2;
+        }
+
+          if (n < initial) {
+            break;
         }
     }
 }

@@ -1,6 +1,6 @@
 #ifndef COLLATZ_H
 #define COLLATZ_H
-#define DOMAIN_UPPER_BOUND 1000000
+#define DOMAIN_UPPER_BOUND 100000000
 #define MAX_MEMO 1000
 
 #include <stdio.h>
@@ -34,5 +34,8 @@ void compute_collatz(
     uint16_t *stopping_time, 
     memo_entry *memo, 
     uint64_t *trajectory);
+
+void verify_collatz(
+    uint64_t n);
 
 #endif
